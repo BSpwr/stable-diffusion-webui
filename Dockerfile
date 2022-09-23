@@ -4,6 +4,9 @@ COPY . /root/stable-diffusion
 
 WORKDIR /root/stable-diffusion
 
+# Update system
+RUN apt update && apt -y upgrade
+
 ENV PYTHONUNBUFFERED=1
 ENV GRADIO_SERVER_NAME=0.0.0.0
 ENV GRADIO_SERVER_PORT=7860
