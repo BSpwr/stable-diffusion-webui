@@ -4,12 +4,10 @@ services:
     build: .
     ports:
       - "7860:7860"
-      - "7861:7861"
     volumes:
       - ../sd-data:/models
       - ../sd-output:/outputs
+      - ../sd-cache/root_profile:/root
     devices:
       - "/dev/kfd"
       - "/dev/dri"
-# volumes:
-  # sd-cache:

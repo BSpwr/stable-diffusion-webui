@@ -20,6 +20,14 @@ else
     done
 fi
 
+# Setup git so we can git pull
+git config --global user.email "_"
+git config --global user.name "_"
+git remote set-url origin https://github.com/BSpwr/stable-diffusion-webui.git
+
+# Git pull to get the newest version
+git pull
+
 export PYTORCH_HIP_ALLOC_CONF=max_split_size_mb:128 # Limit pytorch memory fragmentation
 export HSA_OVERRIDE_GFX_VERSION=10.3.0 # Set necessary export for Stable Diffusion to work on RDNA 5700XT using ROCm
 export TORCH_COMMAND='pip install torch torchvision --extra-index-url https://download.pytorch.org/whl/rocm5.1.1'
