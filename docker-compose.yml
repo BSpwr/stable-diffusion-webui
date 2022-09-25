@@ -1,13 +1,17 @@
 version: "3.9"
 services:
   sd:
+    image: stable-diffusion-webui-automatic:dev
     build: .
     ports:
       - "7860:7860"
     volumes:
-      - ../sd-data:/models
-      - ../sd-output:/outputs
+      - ../sd-models:/models
+      - ../sd-outputs:/outputs
       - ../sd-cache/root_profile:/root
+      - ../sd-cache/repositories:/sd/repositories
+      - ../sd-cache/config:/config
+      - ../ESRGAN-models:/sd/ESRGAN
     devices:
       - "/dev/kfd"
       - "/dev/dri"

@@ -13,7 +13,10 @@ EXPOSE 7860
 RUN rm -rf /sd/models \
  && rm -rf /sd/outputs \
  && ln -s /models /sd \
- && ln -s /outputs /sd
+ && ln -s /outputs /sd \
+ && mkdir /config \
+ && touch /config/config.json \
+ && ln -s /config/config.json /sd/config.json
 
 COPY . /sd
 
