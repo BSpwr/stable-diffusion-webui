@@ -12,6 +12,7 @@ services:
       - ../sd-cache/repositories:/sd/repositories
       - ../sd-cache/config:/config
       - ../ESRGAN-models:/sd/ESRGAN
+      - ../SwinIR-models:/sd/SwinIR
     devices:
       - "/dev/kfd"
       - "/dev/dri"
