@@ -22,7 +22,6 @@ class Upscaler:
     filter = None
     model = None
     user_path = None
-    scalers: []
     tile = True
 
     def __init__(self, create_dirs=False):

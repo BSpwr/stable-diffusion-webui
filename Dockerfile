@@ -1,40 +1,42 @@
-FROM docker.io/rocm/pytorch:rocm5.2.3_ubuntu20.04_py3.7_pytorch_1.12.1
+FROM docker.io/rocm/rocm-terminal
 
-WORKDIR /sd
+# Rootless containers running as root have user permissions
+# This avoids file permission issues when using bind mounts 
+USER root
+
+ENV SD_WORKDIR=/sd
+WORKDIR $SD_WORKDIR
 
 # Update system
 RUN apt update && apt -y upgrade
+# Repository for modern python versions
+RUN apt install -y software-properties-common && add-apt-repository -y ppa:deadsnakes/ppa
+# Install modern python
+ENV PYTHON_VERSION_SHORT=3.9
+RUN apt install -y python${PYTHON_VERSION_SHORT} python3-pip python${PYTHON_VERSION_SHORT}-distutils python${PYTHON_VERSION_SHORT}-venv \
+ && update-alternatives --install /usr/bin/python python $(which python${PYTHON_VERSION_SHORT}) 9999 \
+ && update-alternatives --install /usr/bin/python3 python3 $(which python${PYTHON_VERSION_SHORT}) 9999 \
+ && update-alternatives --install /usr/bin/pip pip $(which pip3) 9999 \
+ && pip install --upgrade pip distlib setuptools
+# Needed for opencv
+RUN apt install -y libgl1
 
+# Gradio Setup
 ENV PYTHONUNBUFFERED=1
 ENV GRADIO_SERVER_NAME=0.0.0.0
 ENV GRADIO_SERVER_PORT=7860
 EXPOSE 7860
 
-RUN rm -rf /sd/models \
- && rm -rf /sd/outputs \
- && ln -s /models /sd \
- && ln -s /outputs /sd \
- && mkdir /config \
+# Expose config.json
+RUN mkdir /config \
  && touch /config/config.json \
- && ln -s /config/config.json /sd/config.json
+ && ln -s /config/config.json $SD_WORKDIR/config.json
 
-# Envars for installing dependencies at build time
-ENV K_DIFFUSION_PACKAGE="git+https://github.com/crowsonkb/k-diffusion.git@1a0703dfb7d24d8806267c3e7ccc4caf67fd1331"
-ENV GFPGAN_PACKAGE="git+https://github.com/TencentARC/GFPGAN.git@8d2447a2d918f8eba5a4a01463fd48e45126a379"
-ENV CODEFORMER_REPO="https://github.com/sczhou/CodeFormer.git"
-ENV CODEFORMER_COMMIT_HASH="c5b4593074ba6214284d6acd5f1719b6c5d739af"
-ENV REQS_FILE="requirements.txt"
+# Setup venv
+ENV VIRTUAL_ENV=$SD_WORKDIR/venv
+RUN python -m venv $VIRTUAL_ENV
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
-# Installing dependencies at build time
-RUN pip install $K_DIFFUSION_PACKAGE
-RUN pip install $GFPGAN_PACKAGE
-RUN git clone $CODEFORMER_REPO codeformer \
- && cd codeformer && git checkout $CODEFORMER_COMMIT_HASH && cd .. \
- && pip install -r codeformer/requirements.txt \
- && rm -r codeformer
-COPY ./$REQS_FILE /sd
-RUN pip install -r $REQS_FILE
-
-COPY . /sd
+COPY . $SD_WORKDIR
 
 ENTRYPOINT ["/bin/bash", "entrypoint.sh"]
