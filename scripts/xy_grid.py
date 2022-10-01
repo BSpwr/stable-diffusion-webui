@@ -45,11 +45,8 @@ def apply_sampler(p, x, xs):
 
 
 def apply_checkpoint(p, x, xs):
-    applicable = [info for info in modules.sd_models.checkpoints_list.values() if x in info.title]
-    assert len(applicable) > 0, f'Checkpoint {x} for found'
-
-    info = applicable[0]
-
+    info = modules.sd_models.get_closet_checkpoint_match(x)
+    assert info is not None, f'Checkpoint for {x} not found'
     modules.sd_models.reload_model_weights(shared.sd_model, info)
 
 
@@ -87,12 +84,12 @@ axis_options = [
     AxisOption("Prompt S/R", str, apply_prompt, format_value),
     AxisOption("Sampler", str, apply_sampler, format_value),
     AxisOption("Checkpoint name", str, apply_checkpoint, format_value),
-    AxisOption("Sigma Churn", float, apply_field("s_churn"),  format_value_add_label),
-    AxisOption("Sigma min",   float, apply_field("s_tmin"),   format_value_add_label),
-    AxisOption("Sigma max",   float, apply_field("s_tmax"),   format_value_add_label),
-    AxisOption("Sigma noise", float, apply_field("s_noise"),  format_value_add_label),
-    AxisOption("DDIM Eta",    float, apply_field("ddim_eta"), format_value_add_label),
-    AxisOptionImg2Img("Denoising", float, apply_field("denoising_strength"), format_value_add_label),#  as it is now all AxisOptionImg2Img items must go after AxisOption ones
+    AxisOption("Sigma Churn", float, apply_field("s_churn"), format_value_add_label),
+    AxisOption("Sigma min", float, apply_field("s_tmin"), format_value_add_label),
+    AxisOption("Sigma max", float, apply_field("s_tmax"), format_value_add_label),
+    AxisOption("Sigma noise", float, apply_field("s_noise"), format_value_add_label),
+    AxisOption("Eta", float, apply_field("eta"), format_value_add_label),
+    AxisOptionImg2Img("Denoising", float, apply_field("denoising_strength"), format_value_add_label),  # as it is now all AxisOptionImg2Img items must go after AxisOption ones
 ]
 
 
@@ -159,6 +156,9 @@ class Script(scripts.Script):
         p.batch_size = 1
 
         def process_axis(opt, vals):
+            if opt.label == 'Nothing':
+                return [0]
+
             valslist = [x.strip() for x in vals.split(",")]
 
             if opt.type == int:
