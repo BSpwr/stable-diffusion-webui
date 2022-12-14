@@ -32,4 +32,5 @@ export PYTORCH_HIP_ALLOC_CONF=max_split_size_mb:128 # Limit pytorch memory fragm
 export HSA_OVERRIDE_GFX_VERSION=10.3.0 # Set necessary export for Stable Diffusion to work on RDNA 5700XT using ROCm
 export TORCH_COMMAND='pip install torch torchvision --extra-index-url https://download.pytorch.org/whl/rocm5.1.1'
 python -m venv $VIRTUAL_ENV # Make the virtualenv if it doesn't exist
-python launch.py --precision full --no-half --max-batch-count 32 --medvram
+sed 's/run_pip("install xformers", "xformers")/pass/' launch.py # xformers needs to be manually compiled for ROCm, just ignore it
+python launch.py --precision full --no-half --medvram

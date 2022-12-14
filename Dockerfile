@@ -27,10 +27,10 @@ ENV GRADIO_SERVER_NAME=0.0.0.0
 ENV GRADIO_SERVER_PORT=7860
 EXPOSE 7860
 
-# Expose config.json
-RUN mkdir /config \
- && touch /config/config.json \
- && ln -s /config/config.json $SD_WORKDIR/config.json
+# Expose configuration files
+RUN mkdir $SD_WORKDIR/config \
+ && touch $SD_WORKDIR/config/config.json && ln -sf $SD_WORKDIR/config/config.json $SD_WORKDIR/config.json \
+ && touch $SD_WORKDIR/config/styles.csv && ln -sf $SD_WORKDIR/config/styles.csv $SD_WORKDIR/config.json
 
 # Setup venv
 ENV VIRTUAL_ENV=$SD_WORKDIR/venv
